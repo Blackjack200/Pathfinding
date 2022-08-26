@@ -1,5 +1,5 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace salmonde\pathfinding\utils\validator;
 
@@ -10,12 +10,12 @@ class DistanceValidator extends Validator {
 
 	private $maxDistanceSquared;
 
-	public function __construct(int $priority, int $maxDistance){
+	public function __construct(int $priority, int $maxDistance) {
 		parent::__construct($priority);
 		$this->maxDistanceSquared = $maxDistance ** 2;
 	}
 
-	public function isValidBlock(Algorithm $algorithm, Block $block, int $fromSide): bool{
+	public function isValidBlock(Algorithm $algorithm, Block $block, int $fromSide) : bool {
 		return $algorithm->getStartPos()->distanceSquared($block->getPos()) <= $this->maxDistanceSquared;
 	}
 }

@@ -1,11 +1,11 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace salmonde\pathfinding;
 
-use pocketmine\world\World;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
+use pocketmine\world\World;
 use salmonde\pathfinding\astar\AStar;
 use salmonde\pathfinding\utils\validator\DistanceValidator;
 use salmonde\pathfinding\utils\validator\InsideWorldValidator;
@@ -22,7 +22,7 @@ class Pathfinder {
 	private $startTime;
 	private $timeout;
 
-	public function __construct(World $world, Vector3 $startPos, Vector3 $targetPos, ?AxisAlignedBB $boundingBox = null, float $timeout = 1.0, int $maxIterations = 100000){
+	public function __construct(World $world, Vector3 $startPos, Vector3 $targetPos, ?AxisAlignedBB $boundingBox = null, float $timeout = 1.0, int $maxIterations = 100000) {
 		$this->algorithm = new AStar($world, $startPos, $targetPos);
 		$this->timeout = $timeout;
 		$this->maxIterations = $maxIterations;
@@ -30,42 +30,42 @@ class Pathfinder {
 		$this->addDefaultValidators($boundingBox);
 	}
 
-	protected function addDefaultValidators(?AxisAlignedBB $boundingBox = null): void{
+	protected function addDefaultValidators(?AxisAlignedBB $boundingBox = null) : void {
 		$highestPriority = $this->getAlgorithm()->getHighestValidatorPriority();
 		$this->algorithm->addValidator(new InsideWorldValidator($highestPriority === 0 ? 100 : $highestPriority + 1));
 		$this->algorithm->addValidator(new PassableValidator($this->getAlgorithm()->getLowestValidatorPriority() - 1, $boundingBox ?? AxisAlignedBB::one()));
 	}
 
-	public function getAlgorithm(): Algorithm{
+	public function getAlgorithm() : Algorithm {
 		return $this->algorithm;
 	}
 
-	public function findPath(): void{
+	public function findPath() : void {
 		$this->startTime = microtime(true);
 		$algorithm = $this->getAlgorithm();
 
-		while(!$algorithm->isFinished() and $this->checkTime() and $this->checkIterations()){
+		while (!$algorithm->isFinished() and $this->checkTime() and $this->checkIterations()) {
 			$algorithm->tick();
 		}
 	}
 
-	protected function checkTime(): bool{
+	protected function checkTime() : bool {
 		return $this->timeout === 0.0 or microtime(true) - $this->startTime < $this->timeout;
 	}
 
-	protected function checkIterations(): bool{
+	protected function checkIterations() : bool {
 		return $this->maxIterations === 0 or $this->iterations < $this->maxIterations;
 	}
 
-	public function getPathResult(): ?PathResult{
+	public function getPathResult() : ?PathResult {
 		return $this->getAlgorithm()->getPathResult();
 	}
 
-	public function setMaxDistance(int $maxDistance): void{
+	public function setMaxDistance(int $maxDistance) : void {
 		$this->algorithm->addValidator(new DistanceValidator($this->getAlgorithm()->getLowestValidatorPriority() - 1, $maxDistance));
 	}
 
-	public function setMaxJumpHeight(int $maxJumpHeight): void{
+	public function setMaxJumpHeight(int $maxJumpHeight) : void {
 		$this->algorithm->addValidator(new JumpHeightValidator($this->getAlgorithm()->getLowestValidatorPriority() - 1, $maxJumpHeight));
 	}
 }

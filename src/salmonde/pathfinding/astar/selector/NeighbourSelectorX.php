@@ -1,5 +1,5 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace salmonde\pathfinding\astar\selector;
 
@@ -8,10 +8,10 @@ use pocketmine\math\Facing;
 
 class NeighbourSelectorX implements NeighbourSelector {
 
-	public function getNeighbours(Block $block): array{
+	public function getNeighbours(Block $block) : array {
 		return [
 			Facing::WEST => $block->getSide(Facing::WEST),
-			Facing::EAST => $block->getSide(Facing::EAST)
+			Facing::EAST => $block->getSide(Facing::EAST),
 		];
 	}
 }
