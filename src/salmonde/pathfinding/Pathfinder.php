@@ -13,14 +13,13 @@ use salmonde\pathfinding\utils\validator\JumpHeightValidator;
 use salmonde\pathfinding\utils\validator\PassableValidator;
 
 class Pathfinder {
+	private AStar $algorithm;
 
-	private $algorithm;
+	private int $iterations = 0;
+	private int $maxIterations;
+	private float $timeout;
 
-	private $iterations = 0;
-	private $maxIterations;
-
-	private $startTime;
-	private $timeout;
+	private float $startTime = 0.0;
 
 	public function __construct(World $world, Vector3 $startPos, Vector3 $targetPos, ?AxisAlignedBB $boundingBox = null, float $timeout = 1.0, int $maxIterations = 100000) {
 		$this->algorithm = new AStar($world, $startPos, $targetPos);
@@ -36,9 +35,7 @@ class Pathfinder {
 		$this->algorithm->addValidator(new PassableValidator($this->getAlgorithm()->getLowestValidatorPriority() - 1, $boundingBox ?? AxisAlignedBB::one()));
 	}
 
-	public function getAlgorithm() : Algorithm {
-		return $this->algorithm;
-	}
+	public function getAlgorithm() : Algorithm { return $this->algorithm; }
 
 	public function findPath() : void {
 		$this->startTime = microtime(true);
@@ -57,9 +54,7 @@ class Pathfinder {
 		return $this->maxIterations === 0 or $this->iterations < $this->maxIterations;
 	}
 
-	public function getPathResult() : ?PathResult {
-		return $this->getAlgorithm()->getPathResult();
-	}
+	public function getPathResult() : ?PathResult { return $this->getAlgorithm()->getPathResult(); }
 
 	public function setMaxDistance(int $maxDistance) : void {
 		$this->algorithm->addValidator(new DistanceValidator($this->getAlgorithm()->getLowestValidatorPriority() - 1, $maxDistance));

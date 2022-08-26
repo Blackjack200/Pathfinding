@@ -7,9 +7,8 @@ use pocketmine\block\Block;
 use salmonde\pathfinding\Algorithm;
 
 class InsideWorldValidator extends Validator {
-
 	public function isValidBlock(Algorithm $algorithm, Block $block, int $fromSide) : bool {
-		$blockPos = $block->getPos();
+		$blockPos = $block->getPosition();
 		return $algorithm->getWorld()->isInWorld($blockPos->x, $blockPos->y, $blockPos->z);
 	}
 }

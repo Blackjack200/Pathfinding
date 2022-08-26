@@ -7,7 +7,6 @@ use pocketmine\block\Block;
 use pocketmine\block\BlockLegacyIds as Ids;
 
 class DefaultCostCalculator extends CostCalculator {
-
 	public function getCost(Block $block) : float {
 		switch ($block->getId()) {
 			case Ids::WATER:

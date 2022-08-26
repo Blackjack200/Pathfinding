@@ -6,8 +6,7 @@ namespace salmonde\pathfinding\astar;
 use SplMinHeap;
 
 class NodeHeap extends SplMinHeap {
-
-	protected function compare($node1, $node2) : int {
-		return (int) ($node2->getF() - $node1->getF());
+	protected function compare($value1, $value2) : int {
+		return (int) ($value2->getF() - $value1->getF());
 	}
 }

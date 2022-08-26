@@ -6,8 +6,5 @@ namespace salmonde\pathfinding\astar;
 use pocketmine\block\Block;
 
 class CostCalculator {
-
-	public function getCost(Block $block) : float {
-		return 1.0;
-	}
+	public function getCost(Block $block) : float { return 1.0; }
 }

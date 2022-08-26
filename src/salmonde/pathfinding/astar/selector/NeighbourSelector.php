@@ -6,6 +6,5 @@ namespace salmonde\pathfinding\astar\selector;
 use pocketmine\block\Block;
 
 interface NeighbourSelector {
-
 	public function getNeighbours(Block $block) : array;
 }

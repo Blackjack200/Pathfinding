@@ -8,8 +8,7 @@ use pocketmine\math\Facing;
 use salmonde\pathfinding\Algorithm;
 
 class JumpHeightValidator extends Validator {
-
-	private $maxJumpHeight;
+	private int $maxJumpHeight;
 
 	public function __construct(int $priority, int $maxJumpHeight) {
 		parent::__construct($priority);

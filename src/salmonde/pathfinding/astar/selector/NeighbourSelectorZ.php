@@ -7,7 +7,6 @@ use pocketmine\block\Block;
 use pocketmine\math\Facing;
 
 class NeighbourSelectorZ implements NeighbourSelector {
-
 	public function getNeighbours(Block $block) : array {
 		return [
 			Facing::NORTH => $block->getSide(Facing::NORTH),

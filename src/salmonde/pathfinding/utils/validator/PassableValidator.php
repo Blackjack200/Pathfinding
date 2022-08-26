@@ -8,8 +8,7 @@ use pocketmine\math\AxisAlignedBB;
 use salmonde\pathfinding\Algorithm;
 
 class PassableValidator extends Validator {
-
-	private $boundingBox;
+	private AxisAlignedBB $boundingBox;
 
 	public function __construct(int $priority, AxisAlignedBB $boundingBox) {
 		parent::__construct($priority);
@@ -21,7 +20,7 @@ class PassableValidator extends Validator {
 			return false;
 		}
 
-		$blockPos = $block->getPos();
+		$blockPos = $block->getPosition();
 		$boundingBox = $this->boundingBox->offsetCopy($blockPos->x, $blockPos->y, $blockPos->z);
 		foreach ($algorithm->getWorld()->getCollisionBlocks($boundingBox) as $collidingBlock) {
 			if ($collidingBlock->isSolid()) {

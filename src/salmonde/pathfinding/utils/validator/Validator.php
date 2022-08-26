@@ -7,16 +7,11 @@ use pocketmine\block\Block;
 use salmonde\pathfinding\Algorithm;
 
 abstract class Validator {
+	private int $priority;
 
-	private $priority;
+	public function __construct(int $priority) { $this->priority = $priority; }
 
-	public function __construct(int $priority) {
-		$this->priority = $priority;
-	}
-
-	public function getPriority() : int {
-		return $this->priority;
-	}
+	public function getPriority() : int { return $this->priority; }
 
 	abstract public function isValidBlock(Algorithm $algorithm, Block $block, int $fromSide) : bool;
 }

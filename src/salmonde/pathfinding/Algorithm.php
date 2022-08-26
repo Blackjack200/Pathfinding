@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace salmonde\pathfinding;
 
-use Ds\Vector;
 use pocketmine\block\Block;
 use pocketmine\math\Facing;
 use pocketmine\math\Vector3;
@@ -12,20 +11,21 @@ use salmonde\pathfinding\utils\validator\Validator;
 
 abstract class Algorithm {
 
-	protected $startPos;
-	protected $targetPos;
-	private $world;
-	private $pathResult = null;
+	protected Vector3 $startPos;
+	protected Vector3 $targetPos;
+	private World $world;
+	private ?PathResult $pathResult = null;
 
-	private $validators;
+	/** @var Validator[] */
+	protected array $validatorsFlattened = [];
+	/** @var Validator[][] */
+	private array $validators = [];
 
 	public function __construct(World $world, Vector3 $startPos, Vector3 $targetPos) {
 		$this->world = $world;
 		$this->startPos = $startPos;
 		$this->targetPos = $targetPos;
 		$this->reset();
-
-		$this->validators = new Vector();
 	}
 
 	abstract public function reset() : void;
@@ -53,27 +53,17 @@ abstract class Algorithm {
 	}
 
 	public function addValidator(Validator $validator) : void {
-		$this->validators->push($validator);
-		$this->sortValidators();
-	}
-
-	protected function sortValidators() : void {
-		$this->validators->sort(function(Validator $v1, Validator $v2) : int {
-			return $v2->getPriority() - $v1->getPriority();
-		});
+		$this->validators[$validator->getPriority()][spl_object_hash($validator)] = $validator;
+		$this->revamp();
 	}
 
 	public function removeValidator(Validator $validator) : void {
-		$index = $this->getValidators()->find($validator);
-
-		if ($index !== false) {
-			$this->getValidators()->remove($index);
-			$this->sortValidators();
-		}
+		unset($this->validators[$validator->getPriority()][spl_object_hash($validator)]);
+		$this->revamp();
 	}
 
-	public function getValidators() : Vector {
-		return $this->validators;
+	public function getValidators() : array {
+		return $this->validatorsFlattened;
 	}
 
 	public function getHighestValidatorPriority() : int {
@@ -119,12 +109,19 @@ abstract class Algorithm {
 
 	protected function isValidBlock(Block $block, int $side) : bool {
 		$oppositeSide = Facing::opposite($side);
-		foreach ($this->validators as $validator) {
+		foreach ($this->getValidators() as $validator) {
 			if (!$validator->isValidBlock($this, $block, $oppositeSide)) {
 				return false;
 			}
 		}
 
 		return true;
+	}
+
+	private function revamp() : void {
+		$this->validatorsFlattened = [];
+		foreach ($this->validators as $validators) {
+			$this->validatorsFlattened = [...$this->validatorsFlattened, ...$validators];
+		}
 	}
 }

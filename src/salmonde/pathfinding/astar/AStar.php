@@ -13,13 +13,12 @@ use salmonde\pathfinding\PathResult;
 use function abs;
 
 class AStar extends Algorithm {
+	private NodeHeap $openListHeap;
+	private array $openList;
+	private array $closedList;
 
-	private $openListHeap;
-	private $openList;
-	private $closedList;
-
-	private $neighbourSelector;
-	private $costCalculator;
+	private NeighbourSelector $neighbourSelector;
+	private CostCalculator $costCalculator;
 
 	public function __construct(World $world, Vector3 $startPos, Vector3 $targetPos) {
 		parent::__construct($world, Node::fromVector3($startPos), Node::fromVector3($targetPos));
@@ -39,17 +38,11 @@ class AStar extends Algorithm {
 		parent::setTargetPos($node);
 	}
 
-	public function setStartPos(Vector3 $startPos) : void {
-		parent::setStartPos(Node::fromVector3($startPos));
-	}
+	public function setStartPos(Vector3 $startPos) : void { parent::setStartPos(Node::fromVector3($startPos)); }
 
-	public function getCostCalculator() : CostCalculator {
-		return $this->costCalculator;
-	}
+	public function getCostCalculator() : CostCalculator { return $this->costCalculator; }
 
-	public function setCostCalculator(CostCalculator $costCalculator) : void {
-		$this->costCalculator = $costCalculator;
-	}
+	public function setCostCalculator(CostCalculator $costCalculator) : void { $this->costCalculator = $costCalculator; }
 
 	public function tick() : void {
 		$currentNode = $this->openListHeap->extract();
@@ -62,28 +55,28 @@ class AStar extends Algorithm {
 		}
 
 		$hash = World::blockHash($currentNode->x, $currentNode->y, $currentNode->z);
-		$this->openList->remove($hash);
-		$this->closedList->put($hash, $currentNode);
+		unset($this->openList[$hash]);
+		$this->closedList[$hash] = $currentNode;
 
 		$block = $this->getWorld()->getBlockAt($currentNode->x, $currentNode->y, $currentNode->z);
 
 		foreach ($this->getNeighbourSelector()->getNeighbours($block) as $side => $neighbourBlock) {
-			$neighbourBlockPos = $neighbourBlock->getPos();
-			if (!$this->isValidBlock($neighbourBlock, $side) or $this->closedList->hasKey($neighbourHash = World::blockHash($neighbourBlockPos->x, $neighbourBlockPos->y, $neighbourBlockPos->z))) {
+			$neighbourBlockPos = $neighbourBlock->getPosition();
+			if (!$this->isValidBlock($neighbourBlock, $side) || isset($this->closedList[$neighbourHash = World::blockHash($neighbourBlockPos->x, $neighbourBlockPos->y, $neighbourBlockPos->z)])) {
 				continue;
 			}
 
-			$inOpenList = $this->openList->hasKey($neighbourHash);
-			$neighbourNode = $inOpenList ? $this->openList->get($neighbourHash) : Node::fromVector3($neighbourBlockPos);
+			$inOpenList = isset($this->openList[$neighbourHash]);
+			$neighbourNode = $this->openList[$neighbourHash] ?? Node::fromVector3($neighbourBlockPos);
 
 			$cost = $this->costCalculator->getCost($neighbourBlock);
-			if (!$inOpenList or $currentNode->getG() + $cost < $neighbourNode->getG()) {
+			if (!$inOpenList || $currentNode->getG() + $cost < $neighbourNode->getG()) {
 				$neighbourNode->setG($currentNode->getG() + $cost);
 				$neighbourNode->setH($this->calculateEstimatedCost($neighbourBlockPos));
 				$neighbourNode->setPredecessor($currentNode);
 
 				if (!$inOpenList) {
-					$this->openList->put($neighbourHash, $neighbourNode);
+					$this->openList[$neighbourHash] = $neighbourNode;
 					$this->openListHeap->insert($neighbourNode);
 				}
 			}
@@ -92,13 +85,14 @@ class AStar extends Algorithm {
 
 	public function reset() : void {
 		$this->openListHeap = new NodeHeap();
-		$this->openList = new Map();
-		$this->closedList = new Map();
+		$this->openList = [];
+		$this->closedList = [];
 
 		$startPos = $this->getStartPos();
+		assert($startPos instanceof Node);
 		$startPos->setG(0.0);
 		$startPos->setH($this->calculateEstimatedCost($startPos));
-		$this->openList->put(World::blockHash($startPos->x, $startPos->y, $startPos->z), $startPos);
+		$this->openList[World::blockHash($startPos->x, $startPos->y, $startPos->z)] = $startPos;
 		$this->openListHeap->insert($startPos);
 	}
 
@@ -109,7 +103,9 @@ class AStar extends Algorithm {
 
 	protected function parsePath() : void {
 		$pathResult = new PathResult();
-		$currentNode = $this->getTargetPos()->getPredecessor(); // prevent duplicate entry
+		$pos = $this->getTargetPos();
+		assert($pos instanceof Node);
+		$currentNode = $pos->getPredecessor() ?? throw new \RuntimeException(); // prevent duplicate entry
 
 		do {
 			$currentNode = $currentNode->getPredecessor();
@@ -123,15 +119,9 @@ class AStar extends Algorithm {
 		$this->setPathResult($pathResult);
 	}
 
-	public function getNeighbourSelector() : NeighbourSelector {
-		return $this->neighbourSelector;
-	}
+	public function getNeighbourSelector() : NeighbourSelector { return $this->neighbourSelector; }
 
-	public function setNeighbourSelector(NeighbourSelector $neighbourSelector) : void {
-		$this->neighbourSelector = $neighbourSelector;
-	}
+	public function setNeighbourSelector(NeighbourSelector $neighbourSelector) : void { $this->neighbourSelector = $neighbourSelector; }
 
-	public function isFinished() : bool {
-		return $this->getPathResult() instanceof PathResult or $this->openListHeap->isEmpty();
-	}
+	public function isFinished() : bool { return $this->getPathResult() instanceof PathResult or $this->openListHeap->isEmpty(); }
 }
