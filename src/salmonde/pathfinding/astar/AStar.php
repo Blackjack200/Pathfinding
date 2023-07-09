@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace salmonde\pathfinding\astar;
 
-use Ds\Map;
 use pocketmine\math\Vector3;
 use pocketmine\world\World;
 use salmonde\pathfinding\Algorithm;
